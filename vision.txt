@@ -1,0 +1,96 @@
+#include <iostream>
+#include <stdio.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/photo.hpp>
+#include "opencv2\objdetect.hpp"
+#include "opencv2\highgui.hpp"
+#include "opencv2\imgproc.hpp"
+#define NUM_CANALES 3
+
+using namespace std;
+using namespace cv;
+
+void dibujaImagen(const String texto, Mat imagen);
+void procesoImagen();
+void CambioGris(Mat imag);
+void conversionBGR(Mat imag);
+void conversionYCM(Mat imag);
+vector <Mat> separacionCanales(vector <Mat> canales);
+
+int main() {
+	procesoImagen();
+	cin.get();
+	return 0;
+}
+
+void procesoImagen() {
+	const String texColor = "Sintonia de Color";
+	const String dirImagen = "C:\\Users\\Mauricio Vasquez\\Documents\\Imagenes\\rostro2.jpg";
+	Mat imagen = imread(dirImagen, CV_LOAD_IMAGE_COLOR);
+	// dibujaImagen(texColor, imagen);
+	//CambioGris(imagen);
+	conversionBGR(imagen);
+	waitKey(0);
+}
+
+void CambioGris(Mat imgColor){
+	const String texColor = " Color", texGris = " Gris";
+	Mat imgGris;
+
+	cvtColor(imgColor, imgGris, COLOR_BGR2GRAY);
+	dibujaImagen(texColor, imgColor);
+	dibujaImagen(texGris, imgGris);
+}
+
+void conversionBGR(Mat imag) {
+	const String texColor = " Imagen Color";
+	const String texCanales[NUM_CANALES] = { "Canal Azul", "Canal Verde", "Canal Rojo" };
+	const String texGris[NUM_CANALES] = { "Gris Azul", "Gris Verde", "Gris Rojo" };
+	vector <Mat> canales, canalesSeparados;
+	split(imag, canales);
+	canalesSeparados = separacionCanales(canales);
+	dibujaImagen(texColor, imag);
+	for (size_t conCan = 0; conCan < NUM_CANALES; conCan++)
+	{
+		dibujaImagen(texGris[conCan], canales[conCan]);
+		dibujaImagen(texCanales[conCan], canalesSeparados[conCan]);
+	}
+}
+
+void conversionYCM(Mat imag){
+	const String texColor = " Imagen Color";
+	const String texCanales[NUM_CANALES] = { "Canal Amarillo", "Canal Cian", "Canal Magenta" };
+	const String texGris[NUM_CANALES] = { "Gris Azul", "Gris Verde", "Gris Rojo" };
+	vector <Mat> canales, canalesSeparados;
+	split(imag, canales);
+	canalesSeparados = separacionCanales(canales);
+	dibujaImagen(texColor, imag);
+	for (size_t conCan = 0; conCan < NUM_CANALES; conCan++)
+	{
+		dibujaImagen(texGris[conCan], canales[conCan]);
+		dibujaImagen(texCanales[conCan], canalesSeparados[conCan]);
+	}
+}
+
+vector <Mat> separacionCanales(vector <Mat> canales) {
+	vector <Mat> separados;
+	Mat matCeros = Mat::zeros(canales[0].rows, canales[0].cols, canales[0].type());
+	for (size_t conCanales = 0; conCanales < NUM_CANALES; conCanales++){
+		vector <Mat> temporal;
+		Mat matrixCanales;
+		for (size_t conSepara = 0; conSepara < NUM_CANALES; conSepara++){
+			if (conCanales == conSepara) 
+				temporal.push_back(canales[conCanales]);
+			else
+				temporal.push_back(matCeros);
+		}
+		merge(temporal, matrixCanales);
+		separados.push_back(matrixCanales);
+	}
+	return separados;
+}
+
+void dibujaImagen( const String texto, Mat ima) {
+	namedWindow(texto, WINDOW_AUTOSIZE);
+	imshow(texto, ima);
+}
